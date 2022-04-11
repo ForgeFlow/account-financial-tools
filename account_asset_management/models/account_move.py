@@ -103,6 +103,7 @@ class AccountMove(models.Model):
                     .with_context(create_asset_from_move_line=True, move_id=move.id)
                 )
                 for key, val in vals.items():
+                    _logger.info("FF TEST: %s - %s" % (key, val))
                     setattr(asset_form, key, val)
                 asset = asset_form.save()
                 asset.analytic_tag_ids = aml.analytic_tag_ids
