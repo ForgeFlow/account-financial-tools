@@ -505,10 +505,10 @@ class WizardUpdateChartsAccounts(models.TransientModel):
                     )
                 )
 
-        if tax.amount_type != "group":
-            # Mark to be removed the lines not found
-            remove_ids = [x for x in current_repartition.ids if x not in existing_ids]
-            result += [(2, x) for x in remove_ids]
+        # if tax.amount_type != "group":
+        #     # Mark to be removed the lines not found
+        #     remove_ids = [x for x in current_repartition.ids if x not in existing_ids]
+        #     result += [(2, x) for x in remove_ids]
         return result
 
     @api.model
@@ -723,7 +723,15 @@ class WizardUpdateChartsAccounts(models.TransientModel):
                     )
             # Register detected differences
             if expected is not None:
-                if expected != [] and (
+                if (
+                    template._name == "account.fiscal.position.template"
+                    and key == "tax_ids"
+                    and expected != []
+                ):
+                    # Avoid error Comparing apples and oranges.
+                    # account.fiscal.position.tax(id) vs [(0,0, {values})]
+                    result[key] = expected
+                elif expected != [] and (
                     key
                     in ["invoice_repartition_line_ids", "refund_repartition_line_ids"]
                     or expected != real[key]
