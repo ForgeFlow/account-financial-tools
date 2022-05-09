@@ -37,3 +37,13 @@ class AccountInvoice(models.Model):
             if i_line.sale_line_ids and len(i_line.sale_line_ids) == 1:
                 aml['sale_line_id'] = i_line.sale_line_ids[0].id
         return res
+
+    @api.model
+    def _refund_cleanup_lines(self, lines):
+        result = super(AccountInvoice, self)._refund_cleanup_lines(lines)
+        for i, line in enumerate(lines):
+            for name, field in line._fields.items():
+                if name == 'sale_line_ids':
+                    result[i][2][name] = [(6, 0, line[name].ids)]
+                    line[name] = False
+        return result
