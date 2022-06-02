@@ -124,7 +124,8 @@ class AccountMove(models.Model):
             additional_value = (
                 (old_price * qty_diff) + (new_price * bill_qty) - original_value
             )
-        return original_value, price, additional_value, bill_qty
+        original_value_for_bill_qty = original_value * bill_qty / move_qty
+        return original_value_for_bill_qty, price, additional_value, bill_qty
 
     def _get_move_stock_valuation_layer_ids(self, move):
         """Override this to exclude or add layers on different processes"""
