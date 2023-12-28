@@ -120,8 +120,8 @@ class SaleOrder(models.Model):
         all_writeoffs = self.env["account.move.line"]
         reconciling_groups = self.env["account.move.line"].read_group(
             domain=unreconciled_domain,
-            fields=["account_id", "product_id", "sale_line_id"],
-            groupby=["account_id", "product_id", "sale_line_id"],
+            fields=["account_id", "product_id", "currency_id", "sale_line_id"],
+            groupby=["account_id", "product_id", "currency_id", "sale_line_id"],
             lazy=False,
         )
         moves_to_reconcile = self.env["account.move.line"]
@@ -132,6 +132,7 @@ class SaleOrder(models.Model):
             account_id = group["account_id"][0]
             product_id = group["product_id"][0] if group["product_id"] else False
             sale_line_id = group["sale_line_id"][0] if group["sale_line_id"] else False
+            currency_id = group["currency_id"][0] if group["currency_id"] else False
             if product_id and product_id in products_considered.ids:
                 # avoid duplicate write-off for kits
                 continue
@@ -142,13 +143,18 @@ class SaleOrder(models.Model):
             products_considered |= products
             if not products:
                 unreconciled_items_group = unreconciled_items.filtered(
-                    lambda l: (l.account_id.id == account_id and not l.product_id)
+                    lambda l: (
+                        l.account_id.id == account_id
+                        and not l.product_id
+                        and l.currency_id.id == currency_id
+                    )
                 )
             else:
                 unreconciled_items_group = unreconciled_items.filtered(
                     lambda l: (
                         l.account_id.id == account_id
                         and l.product_id.id in products.ids
+                        and l.currency_id.id == currency_id
                     )
                 )
             if float_is_zero(
