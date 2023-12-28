@@ -123,20 +123,23 @@ class PurchaseOrder(models.Model):
         all_writeoffs = self.env["account.move.line"]
         reconciling_groups = self.env["account.move.line"].read_group(
             domain=unreconciled_domain,
-            fields=["account_id", "product_id", "purchase_line_id"],
-            groupby=["account_id", "product_id", "purchase_line_id"],
+            fields=["account_id", "product_id", "currency_id", "purchase_line_id"],
+            groupby=["account_id", "product_id", "currency_id", "purchase_line_id"],
             lazy=False,
         )
         unreconciled_items = self.env["account.move.line"].search(unreconciled_domain)
         for group in reconciling_groups:
             account_id = group["account_id"][0]
             product_id = group["product_id"][0] if group["product_id"] else False
+            currency_id = group["currency_id"][0] if group["currency_id"] else False
             purchase_line_id = (
                 group["purchase_line_id"][0] if group["purchase_line_id"] else False
             )
             unreconciled_items_group = unreconciled_items.filtered(
                 lambda l: (
-                    l.account_id.id == account_id and l.product_id.id == product_id
+                    l.account_id.id == account_id
+                    and l.product_id.id == product_id
+                    and l.currency_id.id == currency_id
                 )
             )
             if float_is_zero(
