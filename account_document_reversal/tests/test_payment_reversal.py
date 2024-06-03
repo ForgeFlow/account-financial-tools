@@ -92,7 +92,7 @@ class TestPaymentReversal(SavepointCase):
         cls.invoice.write({"invoice_line_ids": [(0, 0, cls.invoice_line)]})
 
     def test_payment_cancel_normal(self):
-        """ Tests that, if I don't use cancel reversal,
+        """Tests that, if I don't use cancel reversal,
         I can create an invoice, pay it and then cancel as normal. I expect:
         - account move are removed completely
         """
@@ -123,7 +123,7 @@ class TestPaymentReversal(SavepointCase):
         self.assertFalse(move_lines)
 
     def test_payment_cancel_reversal(self):
-        """ Tests that if I use cancel reversal, I can create an invoice,
+        """Tests that if I use cancel reversal, I can create an invoice,
         pay it and then cancel the payment. I expect:
         - Reversal journal entry is created, and reconciled with original entry
         - Status of the payment is changed to cancel
@@ -178,7 +178,7 @@ class TestPaymentReversal(SavepointCase):
         self.assertEqual(self.invoice.state, "posted")
 
     def test_bank_statement_cancel_normal(self):
-        """ Tests that, if I don't use cancel reversal,
+        """Tests that, if I don't use cancel reversal,
         I can create an invoice, pay it via a bank statement
         line and then cancel the bank statement line as normal. I expect:
         - account move are removed completely
@@ -232,7 +232,7 @@ class TestPaymentReversal(SavepointCase):
         self.assertFalse(move_lines)
 
     def test_bank_statement_cancel_reversal_01(self):
-        """ Tests that I can create an invoice, pay it via a bank statement
+        """Tests that I can create an invoice, pay it via a bank statement
         line and then reverse the bank statement line. I expect:
         - Reversal journal entry is created, and reconciled with original entry
         - The invoice is not reconciled with the payment anymore
@@ -302,7 +302,7 @@ class TestPaymentReversal(SavepointCase):
         self.assertFalse(bank_stmt_line.journal_entry_ids)
 
     def test_bank_statement_cancel_reversal_02(self):
-        """ Tests that I can create a bank statement line and reconcile it
+        """Tests that I can create a bank statement line and reconcile it
         to an expense account, and then reverse the reconciliation of the
         statement line. I expect:
         - Reversal journal entry is created, and reconciled with original entry
@@ -383,7 +383,7 @@ class TestPaymentReversal(SavepointCase):
         self.assertNotIn(bank_moves[0].id, mv_lines_ids)
 
     def test_bank_statement_cancel_exception(self):
-        """ Tests on exception case, if statement is already validated, but
+        """Tests on exception case, if statement is already validated, but
         user cancel statement line. I expect:
         - UserError will show
         """
