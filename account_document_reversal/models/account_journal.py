@@ -11,7 +11,6 @@ class AccountJournal(models.Model):
             ("normal", "Normal (remove journal entries)"),
             ("reversal", "Reversal (create reversed journal entries)"),
         ],
-        string="Cancel Method",
         default="normal",
         required=True,
     )

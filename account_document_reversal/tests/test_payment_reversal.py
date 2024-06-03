@@ -9,7 +9,7 @@ from odoo.tests.common import Form, SavepointCase
 class TestPaymentReversal(SavepointCase):
     @classmethod
     def setUpClass(cls):
-        super(TestPaymentReversal, cls).setUpClass()
+        super().setUpClass()
         # Models
         cls.acc_bank_stmt_model = cls.env["account.bank.statement"]
         cls.acc_bank_stmt_line_model = cls.env["account.bank.statement.line"]
@@ -153,19 +153,19 @@ class TestPaymentReversal(SavepointCase):
             .move_id
         )
         # Set to draft no longer allowed, must do cancel reversal
-        with self.assertRaises(Exception):
+        with self.assertRaises(UserError):
             payment.action_draft()
         # Normal cancel no longer allowed
-        with self.assertRaises(Exception):
+        with self.assertRaises(UserError):
             payment.cancel()
         res = payment.cancel_reversal()
         # Cancel payment
         ctx = {"active_model": "account.payment", "active_ids": [payment.id]}
-        f = Form(self.env[res["res_model"]].with_context(ctx))
+        f = Form(self.env[res["res_model"]].with_context(**ctx))
         self.assertEqual(res["res_model"], "reverse.account.document")
         cancel_wizard = f.save()
         cancel_wizard.action_cancel()
-        reversed_move = move.reverse_entry_id
+        reversed_move = move.reversal_move_id
         move_reconcile = move.mapped("line_ids").mapped("full_reconcile_id")
         reversed_move_reconcile = reversed_move.mapped("line_ids").mapped(
             "full_reconcile_id"
@@ -205,9 +205,9 @@ class TestPaymentReversal(SavepointCase):
         )
         line_id = self.account_move_line_model
         # reconcile the payment with the invoice
-        for l in self.invoice.line_ids:
-            if l.account_id.id == self.account_receivable.id:
-                line_id = l
+        for line in self.invoice.line_ids:
+            if line.account_id.id == self.account_receivable.id:
+                line_id = line
                 break
         bank_stmt_line.process_reconciliation(
             counterpart_aml_dicts=[
@@ -261,9 +261,9 @@ class TestPaymentReversal(SavepointCase):
         )
         line_id = self.account_move_line_model
         # reconcile the payment with the invoice
-        for l in self.invoice.line_ids:
-            if l.account_id.id == self.account_receivable.id:
-                line_id = l
+        for line in self.invoice.line_ids:
+            if line.account_id.id == self.account_receivable.id:
+                line_id = line
                 break
         bank_stmt_line.process_reconciliation(
             counterpart_aml_dicts=[
@@ -285,12 +285,12 @@ class TestPaymentReversal(SavepointCase):
             "active_model": "account.bank.statement.line",
             "active_ids": [bank_stmt_line.id],
         }
-        f = Form(self.env[res["res_model"]].with_context(ctx))
+        f = Form(self.env[res["res_model"]].with_context(**ctx))
         self.assertEqual(res["res_model"], "reverse.account.document")
         cancel_wizard = f.save()
         cancel_wizard.action_cancel()
         move = original_move_lines[0].move_id
-        reversed_move = move.reverse_entry_id
+        reversed_move = move.reversal_move_id
         move_reconcile = move.mapped("line_ids").mapped("full_reconcile_id")
         reversed_move_reconcile = reversed_move.mapped("line_ids").mapped(
             "full_reconcile_id"
@@ -347,12 +347,12 @@ class TestPaymentReversal(SavepointCase):
             "active_model": "account.bank.statement.line",
             "active_ids": [bank_stmt_line.id],
         }
-        f = Form(self.env[res["res_model"]].with_context(ctx))
+        f = Form(self.env[res["res_model"]].with_context(**ctx))
         self.assertEqual(res["res_model"], "reverse.account.document")
         cancel_wizard = f.save()
         cancel_wizard.action_cancel()
         move = original_move_lines[0].move_id
-        reversed_move = move.reverse_entry_id
+        reversed_move = move.reversal_move_id
         move_reconcile = move.mapped("line_ids").mapped("full_reconcile_id")
         reversed_move_reconcile = reversed_move.mapped("line_ids").mapped(
             "full_reconcile_id"
@@ -371,13 +371,13 @@ class TestPaymentReversal(SavepointCase):
             search_str=False,
             mode="rp",
         )
-        mv_lines_ids = [l["id"] for l in mv_lines_rec]
+        mv_lines_ids = [line["id"] for line in mv_lines_rec]
         bank_accounts = (
             self.bank_journal.default_credit_account_id
             | self.bank_journal.default_debit_account_id
         )
         bank_moves = original_move_lines.filtered(
-            lambda l: l.account_id in bank_accounts
+            lambda line: line.account_id in bank_accounts
         )
         self.assertTrue(bank_moves)
         self.assertNotIn(bank_moves[0].id, mv_lines_ids)

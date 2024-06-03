@@ -6,20 +6,21 @@
         <field name="inherit_id" ref="account.view_account_journal_form" />
         <field name="arch" type="xml">
             <xpath expr="//page[@name='advanced_settings']/group" position="inside">
-                <group name="cancel_option" string="Cancel Option">
-                    <field
-                        name="cancel_method"
-                        groups="base.group_no_one"
-                        widget="radio"
-                    />
+                <group
+                    name="cancel_option"
+                    string="Cancel Option"
+                    groups="base.group_no_one"
+                >
+                    <field name="cancel_method" widget="radio" />
                     <field
                         name="use_different_journal"
-                        attrs="{'invisible': [('cancel_method', '!=', 'reversal')]}"
+                        invisible="cancel_method != 'reversal'"
                     />
                     <field
                         name="reversal_journal_id"
                         widget="selection"
-                        attrs="{'invisible': [('cancel_method', '!=', 'reversal'), ('use_different_journal', '=', False)]}"
+                        invisible="cancel_method != 'reversal' or not use_different_journal"
+                        required="use_different_journal"
                     />
                 </group>
             </xpath>

@@ -1,12 +1,13 @@
 # Copyright 2019 Ecosoft Co., Ltd (http://ecosoft.co.th/)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html)
+from odoo.exceptions import UserError
 from odoo.tests.common import Form, SavepointCase
 
 
 class TestInvoiceReversal(SavepointCase):
     @classmethod
     def setUpClass(cls):
-        super(TestInvoiceReversal, cls).setUpClass()
+        super().setUpClass()
         cls.account_type_receivable = cls.env["account.account.type"].create(
             {"name": "Test Receivable", "type": "receivable", "internal_group": "asset"}
         )
@@ -67,17 +68,17 @@ class TestInvoiceReversal(SavepointCase):
         # Open invoice
         self.invoice.post()
         # Normal cancel button is not usable.
-        with self.assertRaises(Exception):
+        with self.assertRaises(UserError):
             self.invoice.button_cancel()
         # Click Cancel will open reverse document wizard
         res = self.invoice.button_cancel_reversal()
         self.assertEqual(res["res_model"], "reverse.account.document")
         # Cancel invoice
         ctx = {"active_model": "account.move", "active_ids": [self.invoice.id]}
-        f = Form(self.env[res["res_model"]].with_context(ctx))
+        f = Form(self.env[res["res_model"]].with_context(**ctx))
         cancel_wizard = f.save()
         cancel_wizard.action_cancel()
-        reversed_move = self.invoice.reverse_entry_id
+        reversed_move = self.invoice.reversal_move_id
         move_reconcile = self.invoice.mapped("line_ids").mapped("full_reconcile_id")
         reversed_move_reconcile = reversed_move.mapped("line_ids").mapped(
             "full_reconcile_id"
@@ -89,5 +90,5 @@ class TestInvoiceReversal(SavepointCase):
         self.assertEqual(self.invoice.state, "posted")
         self.assertEqual(self.invoice.cancel_reversal, True)
         # After reversed, set to draft is not allowed
-        with self.assertRaises(Exception):
+        with self.assertRaises(UserError):
             self.invoice.button_draft()

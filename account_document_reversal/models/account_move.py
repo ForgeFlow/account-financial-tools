@@ -9,26 +9,10 @@ class AccountMove(models.Model):
     _inherit = ["account.move", "account.document.reversal"]
 
     cancel_reversal = fields.Boolean(
-        string="Cancel Reversal",
         default=False,
         copy=False,
         help="This document is being cancelled by using reversal method",
     )
-    reverse_entry_id = fields.Many2one(
-        comodel_name="account.move",
-        string="Reversed by",
-        compute="_compute_reverse_entry_id",
-        help="The move that reverse this move (opposite of reversed_entry_id)",
-    )
-
-    def _compute_reverse_entry_id(self):
-        res = self.sudo().search_read(
-            fields=["id", "reversed_entry_id"],
-            domain=[("reversed_entry_id", "in", self.ids)],
-        )
-        reverse_entries = {x["reversed_entry_id"][0]: x["id"] for x in res}
-        for move in self:
-            move.reverse_entry_id = reverse_entries.get(move.id, False)
 
     def button_cancel_reversal(self):
         return self.reverse_document_wizard()
@@ -108,7 +92,7 @@ class AccountMoveLine(models.Model):
         ):
             raise UserError(
                 _(
-                    "This document was cancelled and freozen,\n"
+                    "This document was cancelled and frozen,\n"
                     "unreconcilation not allowed."
                 )
             )

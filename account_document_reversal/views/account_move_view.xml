@@ -15,20 +15,14 @@
                     string="Cancel Entry"
                     type="object"
                     groups="account.group_account_invoice"
-                    attrs="{'invisible': ['|', '|', ('state', '!=', 'posted'), ('is_cancel_reversal', '=', False), ('cancel_reversal', '=', True)]}"
+                    invisible="state != 'posted' or not is_cancel_reversal or cancel_reversal"
                 />
             </button>
             <field name="id" position="before">
                 <widget
                     name="web_ribbon"
                     title="Cancelled"
-                    attrs="{'invisible': ['|', ('cancel_reversal', '=', False), ('type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt'))]}"
-                />
-            </field>
-            <field name="reversed_entry_id" position="after">
-                <field
-                    name="reverse_entry_id"
-                    attrs="{'invisible': [('reverse_entry_id', '=', False)]}"
+                    invisible="not cancel_reversal or move_type not in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt')"
                 />
             </field>
         </field>
@@ -38,7 +32,7 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_account_invoice_filter" />
         <field name="arch" type="xml">
-            <filter name="unpaid" position="after">
+            <filter name="reversed" position="after">
                 <filter
                     name="cancelled"
                     string="Cancelled"
