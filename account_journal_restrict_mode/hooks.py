@@ -8,6 +8,9 @@ def post_init_hook(cr, registry):
     """Enable restrict mode on all journals"""
     env = api.Environment(cr, SUPERUSER_ID, {})
     journals_to_update = env["account.journal"].search(
-        [("restrict_mode_hash_table", "=", False)]
+        [
+            ("restrict_mode_hash_table", "=", False),
+            ("type", "in", ["sale", "purchase", "general"]),
+        ]
     )
     journals_to_update.write({"restrict_mode_hash_table": True})
