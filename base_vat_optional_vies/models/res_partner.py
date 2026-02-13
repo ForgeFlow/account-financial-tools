@@ -4,7 +4,9 @@
 # Copyright 2022 Moduon - Eduardo de Miguel
 # Copyright 2023 Moduon - Emilio Pascual
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+
+from odoo.addons.base_vat.models.res_partner import _ref_vat
 
 
 class ResPartner(models.Model):
@@ -59,3 +61,15 @@ class ResPartner(models.Model):
         return super(
             ResPartner, self.with_context(vat_partner=self)
         )._onchange_check_vies()
+
+    @api.model
+    def _build_vat_error_message(self, country_code, wrong_vat, record_label):
+        return "\n" + _(
+            "The VAT number [%(wrong_vat)s] for %(record_label)s does not seem to be valid. "
+            "\nNote: the expected format is %(expected_format)s",
+            wrong_vat=wrong_vat,
+            record_label=record_label,
+            expected_format=_ref_vat.get(
+                country_code, "'CC##' (CC=Country Code, ##=VAT Number)"
+            ),
+        )

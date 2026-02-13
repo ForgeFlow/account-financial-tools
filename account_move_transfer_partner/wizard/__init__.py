@@ -1,1 +1,0 @@
-from . import wizard_account_move_transfer_partner
