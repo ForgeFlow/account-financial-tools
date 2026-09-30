@@ -71,7 +71,7 @@ class AccountMove(models.Model):
         return super().write(vals)
 
     def post(self):
-        super().post()
+        res = super().post()
         for move in self:
             for aml in move.line_ids.filtered("asset_profile_id"):
                 depreciation_base = aml.debit or -aml.credit
@@ -114,6 +114,7 @@ class AccountMove(models.Model):
             if refs:
                 message = _("This invoice created the asset(s): %s") % ", ".join(refs)
                 move.message_post(body=message)
+        return res
 
     def button_draft(self):
         invoices = self.filtered(lambda r: r.is_purchase_document())
